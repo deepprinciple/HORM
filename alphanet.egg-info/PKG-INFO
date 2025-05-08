@@ -1,0 +1,14 @@
+Metadata-Version: 2.1
+Name: alphanet
+Version: 0.0.1.post73+ge5be1ea.d20241202
+Summary: alphanet mlff
+Author-email: "Chenru Duan, and Yuanqi Du" <duanchenru@gmail.com>
+License: MIT
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Provides-Extra: test
+Requires-Dist: pytest>=6.1.2; extra == "test"
+Requires-Dist: pytest-runner; extra == "test"

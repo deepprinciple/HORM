@@ -1,0 +1,20 @@
+--extra-index-url https://download.pytorch.org/whl/cu121
+
+numpy==1.26.4
+scikit-learn
+rdkit
+ase
+pydantic_settings
+torch==2.2.0
+torch_geometric
+lightning
+wandb
+tensorboard
+lmdb
+ipython
+
+--find-links https://pytorch-geometric.com/whl/torch-2.2.0%2Bcu121.html
+torch_scatter
+torch_cluster
+
+
