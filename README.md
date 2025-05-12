@@ -25,14 +25,10 @@ pip install -r requirements.txt
 
 # How to run this code:
 
-<<<<<<< HEAD
 ### Train models
 
 To train a model, please select the desired architecture from the available options: 'LeftNet', 'EquiformerV2', and 'AlphaNet'.  Specify your choice in the `model_type` field within the `ft.py` file.
 
-=======
-### Train model 
->>>>>>> fab198f6bd695897606fbe276cfbe11155a22763
 
 ```shell
 python ft.py
