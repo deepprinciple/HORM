@@ -16,9 +16,9 @@ from training_module import PotentialModule
 
 
 torch.set_float32_matmul_precision('high')
-model_type = "LeftNet"
+model_type = "Alphanet"
 version = "jac2"
-project = "EQV2_Hess_nips_test"
+project = "Hess_nips_test"
 run_name = f"{model_type}-{version}-" + str(uuid4()).split("-")[-1]
 
 model_config = dict(
@@ -36,6 +36,7 @@ model_config = dict(
     use_sigmoid=False,
     head=16,
     a=0.35,  # forces.std()
+    pos_require_grad = True,
     b=0,  # energy.mean()
     main_chi1=32,
     mp_chi1=32,
