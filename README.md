@@ -22,7 +22,6 @@ pip install -r requirements.txt
 ```
 
 
-
 # How to run this code:
 
 ### Train models

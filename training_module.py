@@ -12,7 +12,7 @@ from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts, StepLR, Cosine
 from pytorch_lightning import LightningModule
 from torchmetrics import MeanAbsoluteError, MeanAbsolutePercentageError, CosineSimilarity
 from torch_scatter import scatter_mean
-
+from nets.equiformer_v2.equiformer_v2_oc20 import EquiformerV2_OC20    
 from ff_lmdb import LmdbDataset
 from utils import average_over_batch_metrics, pretty_print
 import utils as diff_utils
@@ -72,25 +72,45 @@ class PotentialModule(LightningModule):
             ).float()
         elif self.model_config['name'] =='LeftNet':
             from leftnet.potential import Potential
+            from leftnet.model import LEFTNet
+            leftnet_config = dict(
+                pos_require_grad=True,
+                cutoff=10.0,
+                num_layers=6,
+                hidden_channels=196,
+                num_radial=96,
+                in_hidden_channels=8,
+                reflect_equiv=True,
+                legacy=True,
+                update=True,
+                pos_grad=False,
+                single_layer_output=True,
+            )
+            node_nfs: List[int] = [9] * 1  # 3 (pos) + 5 (cat) + 1 (charge)
+            edge_nf: int = 0  # edge type
+            condition_nf: int = 1
+            fragment_names: List[str] = ["structure"]
+            pos_dim: int = 3
+            edge_cutoff: Optional[float] = None
             self.potential = Potential(
-                model_config=model_config,
-                node_nfs=model_config['node_nfs'],
-                edge_nf=model_config['edge_nf'],
-                condition_nf=model_config['condition_nf'],
-                fragment_names=model_config['fragment_names'],
-                pos_dim=model_config['pos_dim'],
-                edge_cutoff=model_config['edge_cutoff'],
-                model=model_config['model'],
-                enforce_same_encoding=model_config['enforce_same_encoding'],
-                source=model_config['source'],
-                timesteps=model_config['timesteps'],
-                condition_time=model_config['condition_time'],
+                model_config=leftnet_config,
+                node_nfs= node_nfs,  # 3 (pos) + 5 (cat) + 1 (charge),
+                edge_nf=edge_nf,
+                condition_nf=condition_nf,
+                fragment_names=fragment_names,
+                pos_dim=pos_dim,
+                edge_cutoff=edge_cutoff,
+                model=LEFTNet,
+                enforce_same_encoding=None,
+                source=None,
+                timesteps=5000,
+                condition_time=False,
             )
         else:
             print("Please Check your model name (choose from 'EquiformerV2', 'Alphanet', 'LeftNet')")           
         self.optimizer_config = optimizer_config
         self.training_config = training_config
-        self.pos_require_grad = model_config["pos_require_grad"]
+        self.pos_require_grad = True
 
         self.clip_grad = training_config["clip_grad"]
         if self.clip_grad:
@@ -103,7 +123,7 @@ class PotentialModule(LightningModule):
         self.MAPEEval = MeanAbsolutePercentageError()
         self.cosineEval = CosineSimilarity(reduction="mean")
         self.val_step_outputs = []
-        from nets.equiformer_v2.equiformer_v2_oc20 import EquiformerV2_OC20        
+    
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(
             self.potential.parameters(),

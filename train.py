@@ -22,7 +22,7 @@ project = "EQV2_Hess_nips_test"
 run_name = f"{model_type}-{version}-" + str(uuid4()).split("-")[-1]
 
 model_config = dict(
-    name="Alphanet",
+    name=model_type,
     num_targets=1,
     output_dim=1,
     readout="sum",
@@ -32,7 +32,6 @@ model_config = dict(
     num_layers=4,
     hidden_channels=128,
     cutoff=5.0,
-    pos_require_grad=True,
     num_radial=64,
     use_sigmoid=False,
     head=16,
