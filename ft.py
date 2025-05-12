@@ -12,11 +12,11 @@ from pytorch_lightning.callbacks import (
 from pytorch_lightning.loggers import TensorBoardLogger, WandbLogger
 from pytorch_lightning.strategies.ddp import DDPStrategy
 
-from alphanet_module import PotentialModule
+from training_module import PotentialModule
 
 
 torch.set_float32_matmul_precision('high')
-model_type = "EquiformerV2"
+model_type = "LeftNet"
 version = "jac2"
 project = "EQV2_Hess_nips_test"
 run_name = f"{model_type}-{version}-" + str(uuid4()).split("-")[-1]

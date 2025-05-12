@@ -122,7 +122,7 @@ class PotentialModule(LightningModule):
     def setup(self, stage: Optional[str] = None):
         if stage == "fit":
             self.train_dataset = LmdbDataset(
-                Path(self.training_config["datadir"], f"ts1x_hess_train_big.lmdb"),
+                Path(self.training_config["datadir"], f"ff_train_5percent_with_hessian.lmdb"),
                 **self.training_config,
             )
             self.val_dataset = LmdbDataset(
