@@ -52,11 +52,19 @@ class LmdbDataset(Dataset):
         else:
             self.metadata_path = self.path.parent / "metadata.npz"
             self.env = self.connect_db(self.path)
+            try:
+                # Try to get the stored length value first
+                self.num_samples = pickle.loads(
+                    self.env.begin().get("length".encode("ascii"))
+                )
+            except (TypeError, KeyError):
+                # Fallback to entries count if length key doesn't exist
+                self.num_samples = self.env.stat()["entries"]
+            
             self._keys = [
                 f"{j}".encode("ascii")
-                for j in range(self.env.stat()["entries"])
+                for j in range(self.num_samples)
             ]
-            self.num_samples = len(self._keys)
 
         self.transform = transform
 
@@ -64,6 +72,9 @@ class LmdbDataset(Dataset):
         return self.num_samples
 
     def __getitem__(self, idx):
+        if idx >= self.num_samples:
+            raise IndexError(f"Index {idx} out of range for dataset with {self.num_samples} samples")
+        
         if not self.path.is_file():
             # Figure out which db this should be indexed from.
             db_idx = bisect.bisect(self._keylen_cumulative, idx)
@@ -82,13 +93,10 @@ class LmdbDataset(Dataset):
             data_object = pickle.loads(datapoint_pickled)
             data_object.id = f"{db_idx}_{el_idx}"
         else:
-            try:
-                datapoint_pickled = self.env.begin().get(self._keys[idx])
-                data_object = pickle.loads(datapoint_pickled)
-            except TypeError:
-                datapoint_pickled = self.env.begin().get(self._keys[idx - 1])
-                data_object = pickle.loads(datapoint_pickled)
-                
+            datapoint_pickled = self.env.begin().get(self._keys[idx])
+            if datapoint_pickled is None:
+                raise KeyError(f"No data found for index {idx}")
+            data_object = pickle.loads(datapoint_pickled)
 
         if self.transform is not None:
             data_object = self.transform(data_object)

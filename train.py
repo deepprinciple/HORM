@@ -16,9 +16,9 @@ from training_module import PotentialModule
 
 
 torch.set_float32_matmul_precision('high')
-model_type = "Alphanet"
+model_type = "AlphaNet"
 version = "jac2"
-project = "Hess_nips_test"
+project = "horm-test"
 run_name = f"{model_type}-{version}-" + str(uuid4()).split("-")[-1]
 
 model_config = dict(
@@ -36,7 +36,7 @@ model_config = dict(
     use_sigmoid=False,
     head=16,
     a=0.35,  # forces.std()
-    pos_require_grad = True,
+    pos_require_grad=True,
     b=0,  # energy.mean()
     main_chi1=32,
     mp_chi1=32,
@@ -59,8 +59,9 @@ optimizer_config = dict(
 )
 
 training_config = dict(
-    datadir="/deepprinciple-proj-dev/datasets/transition-1x/",
-    bz=8,
+    trn_path="data/sample_100.lmdb",
+    val_path="data/sample_100.lmdb",
+    bz=2,
     num_workers=48,
     clip_grad=True,
     gradient_clip_val=0.1,

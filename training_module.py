@@ -17,6 +17,7 @@ from ff_lmdb import LmdbDataset
 from utils import average_over_batch_metrics, pretty_print
 import utils as diff_utils
 from alphanet.models.alphanet import AlphaNet
+import yaml
 
 
 LR_SCHEDULER = {
@@ -61,16 +62,16 @@ class PotentialModule(LightningModule):
         self.model_config = model_config
 
         if self.model_config['name'] == 'EquiformerV2':
-            import yaml
+            
             with open('./equiformer_v2.yml', 'r') as file:
                 config = yaml.safe_load(file)
             model_config = config['model']
             self.potential = EquiformerV2_OC20(**model_config) 
-        elif self.model_config['name'] == 'Alphanet':
+        elif self.model_config['name'] == 'AlphaNet':
             self.potential = AlphaNet(
                 AlphaConfig(model_config)
             ).float()
-        elif self.model_config['name'] =='LeftNet':
+        elif self.model_config['name'] =='LEFTNet' or self.model_config['name'] == 'LEFTNet-df':
             from leftnet.potential import Potential
             from leftnet.model import LEFTNet
             leftnet_config = dict(
@@ -107,7 +108,7 @@ class PotentialModule(LightningModule):
                 condition_time=False,
             )
         else:
-            print("Please Check your model name (choose from 'EquiformerV2', 'Alphanet', 'LeftNet')")           
+            print("Please Check your model name (choose from 'EquiformerV2', 'AlphaNet', 'LEFTNet', 'LEFTNet-df')")           
         self.optimizer_config = optimizer_config
         self.training_config = training_config
         self.pos_require_grad = True
@@ -142,20 +143,16 @@ class PotentialModule(LightningModule):
     def setup(self, stage: Optional[str] = None):
         if stage == "fit":
             self.train_dataset = LmdbDataset(
-                Path(self.training_config["datadir"], f"ff_train_5percent_with_hessian.lmdb"),
+                Path(self.training_config["trn_path"]),
                 **self.training_config,
             )
             self.val_dataset = LmdbDataset(
-                Path(self.training_config["datadir"], f"ff_valid_5percent_with_hessian.lmdb"),
+                Path(self.training_config["val_path"]),
                 **self.training_config,
             )
             print("# of training data: ", len(self.train_dataset))
             print("# of validation data: ", len(self.val_dataset))
-        elif stage == "test":
-            self.test_dataset = LmdbDataset(
-                Path(self.training_config["datadir"], f"ff_test.lmdb"),
-                **self.training_config,
-            )
+
         else:
             raise NotImplementedError
     def get_jacobian(self,forces, pos, grad_outputs, create_graph=False, looped=False):
@@ -306,9 +303,14 @@ class PotentialModule(LightningModule):
             batch, 
             pos_require_grad=self.pos_require_grad
         )
-        hat_ae, hat_forces = self.potential.forward(
-            batch.to(self.device),
-        )
+        if self.model_config['name'] == 'LEFTNet':
+            hat_ae, hat_forces = self.potential.forward_autograd(
+                batch.to(self.device),
+            )
+        else:
+            hat_ae, hat_forces = self.potential.forward(
+                batch.to(self.device),
+            )
         hat_ae = hat_ae.squeeze().to(self.device)
         hat_forces = hat_forces.to(self.device)
         ae = batch.ae.to(self.device)
@@ -383,7 +385,7 @@ class PotentialModule(LightningModule):
         return self._shared_eval(batch, batch_idx, "test", *args)
     
     def on_validation_batch_end(self, outputs, batch, batch_idx, dataloader_idx=0):
-        # 收集每个 batch 的输出
+
         self.val_step_outputs.append(outputs)
 
     def on_validation_epoch_end(self):
