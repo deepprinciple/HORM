@@ -43,15 +43,16 @@ def hess2eigenvalues(hess):
     return eigen_values
 
 
-def evaluate(lmdb_path, model_name, checkpoint_path):
-    checkpoint = torch.load(checkpoint_path)
-    model_config = checkpoint['hyper_parameters']['model_config'] if 'hyper_parameters' in checkpoint else {}
-    model_config['name'] = model_name
+def evaluate(lmdb_path,  checkpoint_path):
+
+    ckpt = torch.load(checkpoint_path)
+    model_name =ckpt['hyper_parameters']['model_config']['name']
+
+    print(f"Model name: {model_name}")
 
     pm = PotentialModule.load_from_checkpoint(
         checkpoint_path,
         strict=False,
-        model_config=model_config
     ).potential.to('cuda')
 
     dataset = LmdbDataset(lmdb_path)
@@ -64,17 +65,22 @@ def evaluate(lmdb_path, model_name, checkpoint_path):
     total_eigen_error = 0.0
     total_asymmetry_error = 0.0
     n_samples = 0
-    
 
-    loss_fn = torch.nn.L1Loss(reduction='mean')
+    idx = 0
 
     for batch in tqdm(dataloader, desc='Evaluating', total=len(dataloader)):
+
+        if idx >= 200:
+            break
+        else:
+            idx += 1
+
         batch = batch.to('cuda')
         batch.pos.requires_grad_()
         batch = compute_extra_props(batch)
 
         # Forward pass
-        if model_name == 'LFETNet':
+        if model_name == 'LEFTNet':
             ener, force = pm.forward_autograd(batch)
         else:
             ener, force = pm.forward(batch)
@@ -85,17 +91,17 @@ def evaluate(lmdb_path, model_name, checkpoint_path):
         eigenvalues = hess2eigenvalues(hess)
 
         # Compute errors
-        e_error = loss_fn(ener.squeeze(), batch.ae)
-        f_error = loss_fn(force, batch.forces)
+        e_error = torch.mean(torch.abs(ener.squeeze() - batch.ae))
+        f_error = torch.mean(torch.abs(force - batch.forces))
         
         # Reshape true hessian
         n_atoms = batch.pos.shape[0]
         hessian_true = batch.hessian.reshape(n_atoms * 3, n_atoms * 3)
-        h_error = loss_fn(hess, hessian_true)
+        h_error = torch.mean(torch.abs(hess - hessian_true))
         
         # Eigenvalue error
         eigen_true = hess2eigenvalues(hessian_true)
-        eigen_error = loss_fn(eigenvalues, eigen_true)
+        eigen_error = torch.mean(torch.abs(eigenvalues - eigen_true))
 
         # Asymmetry error
         asymmetry_error = torch.mean(torch.abs(hess - hess.T))
@@ -127,8 +133,10 @@ def evaluate(lmdb_path, model_name, checkpoint_path):
 
 
 if __name__ == '__main__':
-    model_name = 'EquiformerV2'
-    checkpoint_path = '/deepprinciple-proj-dev/datasets/Hessians/results/weights/eqv2small_base.ckpt'
+    # checkpoint_path = 'eqv2_efh.ckpt'
+    torch.manual_seed(42)
+
+    checkpoint_path = 'ckpt/left.ckpt'
     lmdb_path = 'data/sample_100.lmdb'
     
-    evaluate(lmdb_path, model_name, checkpoint_path)
+    evaluate(lmdb_path, checkpoint_path)

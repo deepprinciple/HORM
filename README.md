@@ -18,8 +18,17 @@ Transition state (TS) characterization is central to computational reaction mode
 
 
 ```shell
-pip install -r requirements.txt
+pip install .
 ```
+
+Note: For torch-cluster installation, you need to install the version that matches your CUDA version. 
+For example, if you encounter CUDA-related errors, you can uninstall torch-cluster and install the version matching your CUDA version. For CUDA 12.1:
+
+```shell
+pip uninstall torch-cluster
+pip install torch-cluster -f https://data.pyg.org/whl/torch-2.2.1+cu121.html
+```
+
 
 
 # How to run this code:
@@ -30,9 +39,21 @@ To train a model, please select the desired architecture from the available opti
 
 
 ```shell
-python ft.py
+python train.py
 ```
+
+### Evaluate models
+
+To evaluate a model, please specify the lmdb dataset and checkpoint, and run the following command:
+
+```shell
+python eval.py
+```
+
+# How to get dataset and checkpoints
+
+...
 
 
 # License
-This project is licensed under the Apache License 2.0. For more details about the Apache License 2.0, please refer to the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
+This project is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License (CC BY-NC-SA 4.0). For more details, please refer to the [CC BY-NC-SA 4.0 License](https://creativecommons.org/licenses/by-nc-sa/4.0/).
