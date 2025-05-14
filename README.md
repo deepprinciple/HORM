@@ -18,14 +18,14 @@ Transition state (TS) characterization is central to computational reaction mode
 
 
 ```shell
-pip install .
+pip install torch==2.2.1
+pip install . # building wheel might take a while
 ```
 
-Note: For torch-cluster installation, you need to install the version that matches your CUDA version. 
+For torch-cluster installation, you need to install the version that matches your CUDA version. 
 For example, if you encounter CUDA-related errors, you can uninstall torch-cluster and install the version matching your CUDA version. For CUDA 12.1:
 
 ```shell
-pip uninstall torch-cluster
 pip install torch-cluster -f https://data.pyg.org/whl/torch-2.2.1+cu121.html
 ```
 
@@ -35,7 +35,7 @@ pip install torch-cluster -f https://data.pyg.org/whl/torch-2.2.1+cu121.html
 
 ### Train models
 
-To train a model, please select the desired architecture from the available options: 'LeftNet', 'EquiformerV2', and 'AlphaNet'.  Specify your choice in the `model_type` field within the `ft.py` file.
+To train a model, please select the desired architecture from the available options: 'LeftNet', 'EquiformerV2', and 'AlphaNet'.  Specify your choice in the `model_type` field within the `train.py` file.
 
 
 ```shell
