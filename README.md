@@ -52,6 +52,10 @@ python eval.py
 
 # How to get dataset and checkpoints
 
+The HORM dataset is available at: https://www.kaggle.com/datasets/yunhonghan/hessian-dataset-for-optimizing-reactive-mliphorm/data
+
+Pre-trained model checkpoints can be downloaded from: https://huggingface.co/yhong55/HORM
+
 ...
 
 

@@ -128,7 +128,7 @@ def evaluate(lmdb_path,  checkpoint_path):
 
 
 if __name__ == '__main__':
-    # checkpoint_path = 'eqv2_efh.ckpt'
+
     torch.manual_seed(42)
 
     checkpoint_path = 'ckpt/left.ckpt'
