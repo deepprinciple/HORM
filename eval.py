@@ -66,14 +66,9 @@ def evaluate(lmdb_path,  checkpoint_path):
     total_asymmetry_error = 0.0
     n_samples = 0
 
-    idx = 0
 
     for batch in tqdm(dataloader, desc='Evaluating', total=len(dataloader)):
 
-        if idx >= 200:
-            break
-        else:
-            idx += 1
 
         batch = batch.to('cuda')
         batch.pos.requires_grad_()
