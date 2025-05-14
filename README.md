@@ -2,7 +2,7 @@
 
 This is the official implementation for the paper: "A Molecular Hessian Database for Optimizing Reactive Machine Learning Interatomic Potentials". 
 
-Please read and cite these manuscripts if using this example: XXX
+
 
 
 - [Overview](#overview)
